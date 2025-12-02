@@ -10,6 +10,7 @@ from fastapi import FastAPI
 # from app.api import router
 from app.config import get_config
 from app.utils.mongodb import MongoDB
+from app.api import router as api_router
 
 # Load application settings from environment or configuration.
 CONFIG = get_config()
@@ -58,5 +59,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 # Create a FastAPI application instance, using the custom lifespan context manager.
 app = FastAPI(title="MyPyProject",
               lifespan=lifespan)
+app.include_router(api_router)
 
 

@@ -10,7 +10,8 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from devtools import pprint
 
 from app.config import get_config
-# from app.documents import DOCUMENTS
+from app.documents.session import Session
+from app.documents.attendance import AttendanceLog
 
 # Retrieve application settings which include MongoDB connection details.
 CONFIG = get_config()
@@ -18,6 +19,9 @@ CONFIG = get_config()
 class MongoDB:
     client: AsyncIOMotorClient
     db: AsyncIOMotorDatabase
+    # Fallback in-memory stores used when a real MongoDB isn't reachable.
+    _fallback_sessions: dict = {}
+    _fallback_attendance_logs: list = []
 
     @classmethod
     async def init(cls, mongo_uri: str = CONFIG.mongo_uri, db_name: str = CONFIG.mongo_dbname) -> None:
@@ -33,13 +37,21 @@ class MongoDB:
         """
         
         # Create a Motor client to interact with MongoDB.
-        cls.client = AsyncIOMotorClient(mongo_uri, connect=True)
+        # Use a short server selection timeout and don't force a connect during object creation
+        cls.client = AsyncIOMotorClient(
+            mongo_uri, connect=False, serverSelectionTimeoutMS=2000
+        )
 
         # Access the database using the name provided in the settings.
         cls.db = cls.client.get_database(db_name)
 
         # Initialize Beanie with the database and the list of document models.
-        await init_beanie(database=cls.db, document_models=[])  # type: ignore
+        try:
+            await init_beanie(database=cls.db, document_models=[Session, AttendanceLog])  # type: ignore
+        except Exception as e:
+            # Fail fast and continue -- allow application to start even if DB is unreachable
+            print("Warning: Beanie init failed, continuing without DB readiness:")
+            pprint(e)
 
 
     @classmethod
@@ -76,6 +88,18 @@ class MongoDB:
             AsyncIOMotorDatabase: The MongoDB database instance.
         """
         return cls.db
+
+    @classmethod
+    def add_fallback_session(cls, session_id: str, payload: dict) -> None:
+        cls._fallback_sessions[session_id] = payload
+
+    @classmethod
+    def get_fallback_session(cls, session_id: str) -> dict | None:
+        return cls._fallback_sessions.get(session_id)
+
+    @classmethod
+    def add_fallback_log(cls, log: dict) -> None:
+        cls._fallback_attendance_logs.append(log)
     
     # @classmethod
     # async def drop_database(cls) -> None:

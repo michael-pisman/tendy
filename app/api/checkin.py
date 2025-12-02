@@ -1,0 +1,114 @@
+from __future__ import annotations
+
+from fastapi import APIRouter, HTTPException
+from beanie.exceptions import CollectionWasNotInitialized
+from app.utils.mongodb import MongoDB
+from app.schemas.checkin import CheckInRequest, CheckInResponse
+from app.documents.session import Session
+from app.documents.attendance import AttendanceLog
+from app.utils.totp import validate_sliding_window
+
+router = APIRouter()
+
+
+@router.post("/check-in", response_model=CheckInResponse)
+async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
+    # Fetch session
+    # Retrieve session from fallback store if available to avoid Pydantic ID validation issues
+    session = MongoDB.get_fallback_session(payload.session_id)
+    if session is None:
+        try:
+            session = await Session.get(payload.session_id)
+        except CollectionWasNotInitialized:
+            # If the DB is not initialized and no fallback exists, session not found
+            raise HTTPException(status_code=404, detail="Session not found")
+        except Exception:
+            # Any parsing or validation error indicates the session id wasn't valid for the DB
+            raise HTTPException(status_code=404, detail="Session not found")
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    # If session inactive return error
+    if (isinstance(session, dict) and not session.get("is_active", True)) or (
+        not isinstance(session, dict) and not session.is_active
+    ):
+        # still log the attempt
+        try:
+            await AttendanceLog(
+            student_id=payload.student_id,
+            session_id=payload.session_id,
+            method=payload.method or "QR",
+            duration_ms=payload.duration_ms or 0,
+            success=False,
+            ).insert()
+        except CollectionWasNotInitialized:
+            MongoDB.add_fallback_log({
+                "student_id": payload.student_id,
+                "session_id": payload.session_id,
+                "method": payload.method or "QR",
+                "duration_ms": payload.duration_ms or 0,
+                "success": False,
+            })
+        return CheckInResponse(success=False, reason="Session is not active")
+
+    strict = (payload.mode or "strict").lower() == "strict"
+    required_len = 3 if strict else 1
+
+    def _get_session_attr(s, name, default=None):
+        return s.get(name, default) if isinstance(s, dict) else getattr(s, name, default)
+
+    ok = validate_sliding_window(payload.scanned_codes, _get_session_attr(session, "session_secret"), required_len=required_len)
+
+    # Simple replay protection
+    checked_in_students = (
+        session.get("checked_in_students", [])
+        if isinstance(session, dict)
+        else (session.checked_in_students or [])
+    )
+    if ok and payload.student_id in checked_in_students:
+        try:
+            await AttendanceLog(
+            student_id=payload.student_id,
+            session_id=payload.session_id,
+            method=payload.method or "QR",
+            duration_ms=payload.duration_ms or 0,
+            success=False,
+            ).insert()
+        except CollectionWasNotInitialized:
+            MongoDB.add_fallback_log({
+                "student_id": payload.student_id,
+                "session_id": payload.session_id,
+                "method": payload.method or "QR",
+                "duration_ms": payload.duration_ms or 0,
+                "success": False,
+            })
+        return CheckInResponse(success=False, reason="Already checked in")
+
+    # Persist log
+    try:
+        await AttendanceLog(
+        student_id=payload.student_id,
+        session_id=payload.session_id,
+        method=payload.method or "QR",
+        duration_ms=payload.duration_ms or 0,
+        success=bool(ok),
+        ).insert()
+    except CollectionWasNotInitialized:
+        MongoDB.add_fallback_log({
+            "student_id": payload.student_id,
+            "session_id": payload.session_id,
+            "method": payload.method or "QR",
+            "duration_ms": payload.duration_ms or 0,
+            "success": bool(ok),
+        })
+
+    if ok:
+        # Mark student as checked in
+        if isinstance(session, dict):
+            session.setdefault("checked_in_students", []).append(payload.student_id)
+            MongoDB.add_fallback_session(payload.session_id, session)
+        else:
+            session.checked_in_students = (session.checked_in_students or []) + [payload.student_id]
+            await session.save()
+        return CheckInResponse(success=True)
+
+    return CheckInResponse(success=False, reason="Invalid codes")
