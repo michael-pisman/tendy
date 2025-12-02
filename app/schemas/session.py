@@ -29,3 +29,23 @@ class CreateSessionResponse(BaseModel):
             }
         }
     }
+
+
+class GetSessionResponse(BaseModel):
+    session_id: str
+    class_name: str
+    instructor_id: str
+    is_active: bool
+    checked_in_students: list[str] = []
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "session_id": "64b3f6a3b0f24f7bbc7a8d93",
+                "class_name": "Intro to HCI",
+                "instructor_id": "inst-123",
+                "is_active": True,
+                "checked_in_students": ["student-1", "student-2"],
+            }
+        }
+    }
