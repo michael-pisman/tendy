@@ -1,0 +1,74 @@
+name: "Feature request"
+description: "Suggest a new feature or improvement for this project"
+title: "feat: "
+labels: ["enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to propose a feature. Please complete the sections below to help us evaluate it quickly.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight checklist
+      options:
+        - label: I have searched the existing issues to make sure this is not a duplicate.
+          required: true
+        - label: I have read the README and existing documentation.
+          required: false
+
+  - type: input
+    id: summary
+    attributes:
+      label: Feature summary
+      description: One sentence describing the feature or improvement.
+      placeholder: e.g., Add role-based access control to streams endpoints
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What problem are you trying to solve? Why is this needed?
+      placeholder: Describe the current pain point or limitation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe how you think this should work. Include API/CLI/UX sketches when relevant.
+      placeholder: Explain the approach, interfaces, configuration, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other solutions did you consider and why were they not chosen?
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Out of scope
+      description: Call out anything explicitly not included in this request.
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Provide verifiable criteria for considering this feature complete.
+      placeholder: |
+        - [ ] Given X when Y then Z
+        - [ ] CLI flag `--foo` toggles behavior
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Links, screenshots, references, related issues, etc.

@@ -1,0 +1,100 @@
+name: "Task"
+description: "Track an implementation task with clear steps and acceptance criteria"
+title: "task: "
+labels: ["task"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to plan and track an implementation task. Provide scope, steps, and acceptance criteria.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One sentence describing the task.
+      placeholder: e.g., Implement JWT refresh token rotation
+    validations:
+      required: true
+
+  - type: textarea
+    id: background
+    attributes:
+      label: Background / Rationale
+      description: Why is this task needed? Link to issues, specs, discussions.
+
+  # - type: textarea
+  #   id: scope
+  #   attributes:
+  #     label: Scope
+  #     description: Define what's in scope and out of scope.
+  #     placeholder: |
+  #       In scope:
+  #       - ...
+  #       Out of scope:
+  #       - ...
+  #   validations:
+  #     required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps / Subtasks
+      description: Break the work into actionable steps.
+      placeholder: |
+        - [ ] Step 1
+        - [ ] Step 2
+        - [ ] Step 3
+    # validations:
+      # required: true
+
+  # - type: textarea
+  #   id: acceptance
+  #   attributes:
+  #     label: Acceptance criteria
+  #     description: Verifiable criteria to consider this task done.
+  #     placeholder: |
+  #       - [ ] Given X when Y then Z
+  #       - [ ] API returns 200 with expected schema
+  #       - [ ] Errors handled and logged
+  #   validations:
+  #     required: true
+
+  - type: textarea
+    id: tests
+    attributes:
+      label: Test plan
+      description: Unit/integration/e2e tests to add or update. Include commands if relevant.
+      placeholder: |
+        - Unit tests: ...
+        - Integration tests: ...
+        - Manual steps: ...
+
+  - type: input
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Other issues/PRs or external dependencies blocking this task.
+
+  - type: input
+    id: due
+    attributes:
+      label: Due date / Target milestone
+      description: Optional timeline information.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P3 - Low
+        - P2 - Medium
+        - P1 - High
+        - P0 - Urgent
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Notes, designs, screenshots, metrics, or links.

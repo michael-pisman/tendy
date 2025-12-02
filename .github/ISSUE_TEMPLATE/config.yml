@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+# Optionally add contact links (uncomment and adjust if you have alternatives like Discussions or Slack)
+contact_links:
+  - name: Questions and support
+    url: https://github.com/csed-ucm/mypyproject/discussions
+    about: Please ask and answer questions here.

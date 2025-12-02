@@ -1,0 +1,77 @@
+[project]
+name = "mypyproject"
+version = "0.0.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pydantic-settings>=2.8.1",
+    "python-semantic-release>=10.1.0",
+    "uvicorn>=0.34.0",
+    "beanie>=1.28.0",
+    "motor>=3.6.0",
+    "fastapi[standard]>=0.116.1",
+    "pydantic>=2.11.7",
+    "typer>=0.16.1",
+    "pydantic-extra-types>=2.10.5",
+    "devtools>=0.12.2",
+]
+
+[dependency-groups]
+dev = [
+    "asgi-lifespan>=2.1.0",
+    "faker>=36.1.1",
+    "httpx>=0.28.1",
+    "mypy>=1.15.0",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.3",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.9",
+]
+
+[project.scripts]
+mypyproject = "app.cli:app"
+
+[tool.uv]
+package = true
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+
+files = ["app"]
+ignore_missing_imports = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+strict_optional = true
+warn_return_any = true
+warn_unused_ignores = true
+warn_no_return = true
+show_column_numbers = true
+pretty = true
+
+
+[tool.pytest.ini_options]
+pythonpath = ["app"]
+testpaths = ["tests"]
+addopts = "--cov --cov-report lcov"
+asyncio_mode = "auto"
+filterwarnings = [
+    'ignore:cgi is deprecated:DeprecationWarning',
+    "ignore:'crypt' is deprecated:DeprecationWarning",
+    'ignore:pkg_resources is deprecated:DeprecationWarning',
+    "ignore::pytest.PytestCollectionWarning",
+]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+branch = "main"
+allow_zero_version = true
+major_on_zero = false
+upload_to_pypi = false
+upload_to_release = true
+commit_version_number = true
+tag_commit = true
+changelog_file = "CHANGELOG.md"
+build_command = "python -m pip install uv && python -m uv build"

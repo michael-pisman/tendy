@@ -1,0 +1,114 @@
+name: "Bug report"
+description: "Report a bug to help us improve"
+title: "bug: "
+labels: ["bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the sections below so we can reproduce and fix it quickly.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight checklist
+      options:
+        - label: I searched existing issues and Discussions; this is not a duplicate.
+          required: true
+        - label: I’m using the latest released version or the current main branch.
+          required: false
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One sentence describing the bug.
+      placeholder: e.g., WebSocket disconnects when sending large payloads
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide a minimal, complete, and verifiable set of steps.
+      placeholder: |
+        1. Start server with config X
+        2. Call POST /api/... with payload {...}
+        3. Observe error in response/logs
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened? Include exact error messages.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How impactful is the issue?
+      options:
+        - Low (minor inconvenience)
+        - Medium (workaround available)
+        - High (blocks feature)
+        - Critical (production outage/data loss)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: regression
+    attributes:
+      label: Regression?
+      description: Did this work before and recently break?
+      options:
+        - Unsure
+        - No
+        - Yes
+
+  - type: input
+    id: version
+    attributes:
+      label: Version / Commit
+      description: App version or git commit SHA you are using.
+      placeholder: e.g., v0.3.1 or 1a2b3c4
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, and runtime details.
+      placeholder: e.g., Ubuntu 22.04, Python 3.11, uv/poetry/venv, Docker etc.
+
+  - type: input
+    id: backend
+    attributes:
+      label: Database/Storage backend
+      description: If applicable, include versions (e.g., MongoDB 7.x).
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and stack traces
+      description: Paste relevant logs. Redact secrets.
+      placeholder: |
+        <paste logs here>
+
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Additional context
+      description: Screenshots, links, references, or anything else that helps.

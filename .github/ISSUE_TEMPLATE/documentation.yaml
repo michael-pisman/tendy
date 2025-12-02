@@ -1,0 +1,54 @@
+name: "Documentation"
+description: "Report missing, unclear, or incorrect documentation"
+title: "docs: "
+labels: ["documentation"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us improve the documentation by filling out the details below.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight checklist
+      options:
+        - label: I have searched the existing issues to avoid duplicates.
+          required: true
+        - label: I checked the README and docs folder for existing coverage.
+          required: false
+
+  - type: input
+    id: area
+    attributes:
+      label: Affected area
+      description: Which part of the docs or codebase is affected?
+      placeholder: e.g., Authentication, WebSocket API, CLI, Examples
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current documentation
+      description: What is currently documented or what did you expect to find?
+      placeholder: Provide a short excerpt or link if available.
+
+  - type: textarea
+    id: improvement
+    attributes:
+      label: Requested change / improvement
+      description: Be as specific as possible. Include code snippets or examples if helpful.
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links, screenshots, external resources, or related issues.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Anything else we should know.
