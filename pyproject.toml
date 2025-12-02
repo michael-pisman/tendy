@@ -1,5 +1,5 @@
 [project]
-name = "mypyproject"
+name = "tendy"
 version = "0.0.0"
 description = ""
 readme = "README.md"
@@ -62,6 +62,7 @@ filterwarnings = [
     "ignore:'crypt' is deprecated:DeprecationWarning",
     'ignore:pkg_resources is deprecated:DeprecationWarning',
     "ignore::pytest.PytestCollectionWarning",
+    "ignore:Accessing the 'model_fields' attribute on the instance is deprecated",
 ]
 
 [tool.semantic_release]
