@@ -11,7 +11,16 @@ from app.utils.totp import validate_sliding_window
 router = APIRouter()
 
 
-@router.post("/check-in", response_model=CheckInResponse)
+@router.post(
+    "/check-in",
+    response_model=CheckInResponse,
+    tags=["Check-in"],
+    summary="Validate a check-in attempt",
+    description=(
+        "Validate a student's check-in attempt using one of the supported methods: "
+        "QR, BLE, Selfie, or simulated methods (NFC, Kiosk, Remote)."
+    ),
+)
 async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
     # Fetch session
     # Retrieve session from fallback store if available to avoid Pydantic ID validation issues

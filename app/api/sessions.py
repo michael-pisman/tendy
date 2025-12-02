@@ -11,7 +11,16 @@ from app.documents.session import Session
 router = APIRouter()
 
 
-@router.post("/session", response_model=CreateSessionResponse)
+@router.post(
+    "/session",
+    response_model=CreateSessionResponse,
+    tags=["Sessions"],
+    summary="Create a new instructor session",
+    description=(
+        "Create a new session and return a `session_secret` used by instructor "
+        "apps to generate rapidly-changing QR codes. The secret is returned once."
+    ),
+)
 async def create_session(payload: CreateSessionRequest) -> CreateSessionResponse:
     session_secret = secrets.token_hex(32)
     session = None
