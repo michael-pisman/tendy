@@ -50,13 +50,34 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
             })
         return CheckInResponse(success=False, reason="Session is not active")
 
+    # Determine validation based on requested method
     strict = (payload.mode or "strict").lower() == "strict"
     required_len = 3 if strict else 1
 
     def _get_session_attr(s, name, default=None):
         return s.get(name, default) if isinstance(s, dict) else getattr(s, name, default)
 
-    ok = validate_sliding_window(payload.scanned_codes, _get_session_attr(session, "session_secret"), required_len=required_len)
+    method = (payload.method or "QR").upper()
+    is_valid = False
+
+    if method == "QR":
+        if not payload.scanned_codes:
+            return CheckInResponse(success=False, reason="No codes scanned")
+        is_valid = validate_sliding_window(payload.scanned_codes, _get_session_attr(session, "session_secret"), required_len=required_len)
+    elif method == "BLE":
+        # Use rssi threshold to accept checks; sensors use negative dBm values
+        if payload.rssi is None:
+            return CheckInResponse(success=False, reason="Missing RSSI")
+        # Accept fairly weak signals down to -95 dBm for this prototype
+        is_valid = payload.rssi > -95
+    elif method == "SELFIE":
+        if payload.face_detected is None:
+            return CheckInResponse(success=False, reason="Missing face detection result")
+        # Trust the client's liveness detection for the prototype
+        is_valid = bool(payload.face_detected)
+    else:
+        # NFC, Kiosk, Remote and other baseline simulations are auto-accepted
+        is_valid = True
 
     # Simple replay protection
     checked_in_students = (
@@ -64,7 +85,7 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
         if isinstance(session, dict)
         else (session.checked_in_students or [])
     )
-    if ok and payload.student_id in checked_in_students:
+    if is_valid and payload.student_id in checked_in_students:
         try:
             await AttendanceLog(
             student_id=payload.student_id,
@@ -90,7 +111,7 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
         session_id=payload.session_id,
         method=payload.method or "QR",
         duration_ms=payload.duration_ms or 0,
-        success=bool(ok),
+        success=bool(is_valid),
         ).insert()
     except CollectionWasNotInitialized:
         MongoDB.add_fallback_log({
@@ -101,7 +122,7 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
             "success": bool(ok),
         })
 
-    if ok:
+    if is_valid:
         # Mark student as checked in
         if isinstance(session, dict):
             session.setdefault("checked_in_students", []).append(payload.student_id)
