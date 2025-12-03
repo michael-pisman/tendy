@@ -6,10 +6,41 @@ from fastapi import APIRouter, HTTPException
 from beanie.exceptions import CollectionWasNotInitialized
 from app.utils.mongodb import MongoDB
 from app.schemas.session import CreateSessionRequest, CreateSessionResponse, GetSessionResponse
+from app.schemas.attendance import AttendanceLogResponse
 from app.documents.session import Session
+from app.documents.attendance import AttendanceLog
 from typing import List
 
 router = APIRouter()
+
+
+@router.get(
+    "/session/{session_id}/logs",
+    response_model=List[AttendanceLogResponse],
+    tags=["Sessions"],
+    summary="Get detailed attendance logs for a session",
+)
+async def get_session_logs(session_id: str) -> List[AttendanceLogResponse]:
+    try:
+        logs = await AttendanceLog.find(
+            AttendanceLog.session_id == session_id,
+            AttendanceLog.success == True
+        ).sort(-AttendanceLog.timestamp).to_list()
+        
+        return [
+            AttendanceLogResponse(
+                student_id=log.student_id,
+                method=log.method,
+                timestamp=log.timestamp,
+                success=log.success,
+                duration_ms=log.duration_ms,
+                selfie_image=log.selfie_image,
+                metadata=log.metadata
+            ) for log in logs
+        ]
+    except CollectionWasNotInitialized:
+        # Fallback
+        return []
 
 
 @router.get(
