@@ -14,6 +14,7 @@ class CheckInRequest(BaseModel):
     scanned_codes: Optional[List[str]] = None  # For QR
     rssi: Optional[int] = None                 # For BLE (negative dBm values)
     face_detected: Optional[bool] = None       # For Selfie
+    selfie_image: Optional[str] = None         # Base64 encoded image
     mode: Optional[str] = "strict"  # 'strict' or 'lenient' only applies to QR
 
     model_config = {

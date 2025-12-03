@@ -12,6 +12,7 @@ class AttendanceLog(Document):
     method: str
     duration_ms: int
     success: bool
+    selfie_image: str | None = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:

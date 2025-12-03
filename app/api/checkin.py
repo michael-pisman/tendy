@@ -121,6 +121,7 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
         method=payload.method or "QR",
         duration_ms=payload.duration_ms or 0,
         success=bool(is_valid),
+        selfie_image=payload.selfie_image,
         ).insert()
     except CollectionWasNotInitialized:
         MongoDB.add_fallback_log({
@@ -128,7 +129,8 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
             "session_id": payload.session_id,
             "method": payload.method or "QR",
             "duration_ms": payload.duration_ms or 0,
-            "success": bool(ok),
+            "success": bool(is_valid),
+            "selfie_image": payload.selfie_image,
         })
 
     if is_valid:
