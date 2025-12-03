@@ -30,6 +30,7 @@ async def create_session(payload: CreateSessionRequest) -> CreateSessionResponse
         class_name=payload.class_name,
         instructor_id=payload.instructor_id,
         is_active=True,
+        beacon_uuid=payload.beacon_uuid,
         )
         await session.insert()
     except CollectionWasNotInitialized:
@@ -40,6 +41,7 @@ async def create_session(payload: CreateSessionRequest) -> CreateSessionResponse
             "class_name": payload.class_name,
             "instructor_id": payload.instructor_id,
             "is_active": True,
+            "beacon_uuid": payload.beacon_uuid,
             "checked_in_students": [],
         })
         return CreateSessionResponse(session_id=session_id, session_secret=session_secret)

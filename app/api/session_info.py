@@ -32,6 +32,7 @@ async def get_session(session_id: str) -> GetSessionResponse:
             class_name=session.class_name,
             instructor_id=session.instructor_id,
             is_active=session.is_active,
+            beacon_uuid=session.beacon_uuid,
             checked_in_students=checked,
         )
 
@@ -40,5 +41,6 @@ async def get_session(session_id: str) -> GetSessionResponse:
         class_name=session.get("class_name", ""),
         instructor_id=session.get("instructor_id", ""),
         is_active=bool(session.get("is_active", True)),
+        beacon_uuid=session.get("beacon_uuid"),
         checked_in_students=list(session.get("checked_in_students", [])),
     )
