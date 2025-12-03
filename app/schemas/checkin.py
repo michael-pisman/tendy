@@ -15,6 +15,7 @@ class CheckInRequest(BaseModel):
     rssi: Optional[int] = None                 # For BLE (negative dBm values)
     face_detected: Optional[bool] = None       # For Selfie
     selfie_image: Optional[str] = None         # Base64 encoded image
+    metadata: Optional[dict] = None            # Rich metadata for HCI analysis
     mode: Optional[str] = "strict"  # 'strict' or 'lenient' only applies to QR
 
     model_config = {
