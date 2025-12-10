@@ -158,6 +158,7 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
                 "duration_ms": attendance_doc.duration_ms,
                 "metadata": attendance_doc.metadata,
                 "hci_events": attendance_doc.hci_events,
+                "selfie_image": attendance_doc.selfie_image,
             }
             asyncio.create_task(WSManager.broadcast(payload.session_id, broadcast_payload))
     except Exception:
