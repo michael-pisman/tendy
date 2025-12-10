@@ -35,7 +35,8 @@ async def get_session_logs(session_id: str) -> List[AttendanceLogResponse]:
                 success=log.success,
                 duration_ms=log.duration_ms,
                 selfie_image=log.selfie_image,
-                metadata=log.metadata
+                    metadata=log.metadata,
+                    hci_events=getattr(log, 'hci_events', None)
             ) for log in logs
         ]
     except CollectionWasNotInitialized:

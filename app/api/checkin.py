@@ -48,6 +48,7 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
             method=payload.method or "QR",
             duration_ms=payload.duration_ms or 0,
             success=False,
+            hci_events=payload.hci_events,
             ).insert()
         except CollectionWasNotInitialized:
             MongoDB.add_fallback_log({
@@ -56,6 +57,7 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
                 "method": payload.method or "QR",
                 "duration_ms": payload.duration_ms or 0,
                 "success": False,
+                "hci_events": payload.hci_events,
             })
         return CheckInResponse(success=False, reason="Session is not active")
 
@@ -102,6 +104,7 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
             method=payload.method or "QR",
             duration_ms=payload.duration_ms or 0,
             success=False,
+            hci_events=payload.hci_events,
             ).insert()
         except CollectionWasNotInitialized:
             MongoDB.add_fallback_log({
@@ -110,6 +113,7 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
                 "method": payload.method or "QR",
                 "duration_ms": payload.duration_ms or 0,
                 "success": False,
+                "hci_events": payload.hci_events,
             })
         return CheckInResponse(success=False, reason="Already checked in")
 
@@ -123,6 +127,7 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
         success=bool(is_valid),
         selfie_image=payload.selfie_image,
         metadata=payload.metadata,
+        hci_events=payload.hci_events,
         ).insert()
     except CollectionWasNotInitialized:
         MongoDB.add_fallback_log({
@@ -133,6 +138,7 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
             "success": bool(is_valid),
             "selfie_image": payload.selfie_image,
             "metadata": payload.metadata,
+            "hci_events": payload.hci_events,
         })
 
     if is_valid:

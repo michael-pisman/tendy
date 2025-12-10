@@ -13,6 +13,7 @@ class AttendanceLogResponse(BaseModel):
     duration_ms: int
     selfie_image: Optional[str] = None
     metadata: Optional[dict] = None
+    hci_events: Optional[list[dict]] = None
 
     model_config = {
         "json_schema_extra": {
@@ -23,6 +24,7 @@ class AttendanceLogResponse(BaseModel):
                 "success": True,
                 "duration_ms": 120,
                 "metadata": {"rssi": -65, "device_model": "iPhone 14"},
+                "hci_events": [{"type": "tap", "timestamp": "2023-10-27T10:01:00Z", "screen":"session_selection","details": {"x": 10, "y": 20}}],
             }
         }
     }

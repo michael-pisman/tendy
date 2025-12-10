@@ -16,6 +16,7 @@ class CheckInRequest(BaseModel):
     face_detected: Optional[bool] = None       # For Selfie
     selfie_image: Optional[str] = None         # Base64 encoded image
     metadata: Optional[dict] = None            # Rich metadata for HCI analysis
+    hci_events: Optional[list[dict]] = None    # Optional list of HCI events
     mode: Optional[str] = "strict"  # 'strict' or 'lenient' only applies to QR
 
     model_config = {
@@ -50,6 +51,7 @@ class CheckInRequest(BaseModel):
                         "method": "Selfie",
                         "face_detected": True,
                         "duration_ms": 2100,
+                        "hci_events": [{"type": "tap", "timestamp": "2023-10-27T10:00:00Z", "screen": "selfie_liveness", "details": {"x": 120, "y": 200}}],
                     },
                 },
             }

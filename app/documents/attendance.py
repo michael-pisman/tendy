@@ -14,6 +14,7 @@ class AttendanceLog(Document):
     success: bool
     selfie_image: str | None = None
     metadata: dict | None = None
+    hci_events: list[dict] | None = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:
