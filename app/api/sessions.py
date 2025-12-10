@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 import secrets
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from beanie.exceptions import CollectionWasNotInitialized
 from app.utils.mongodb import MongoDB
 from app.schemas.session import CreateSessionRequest, CreateSessionResponse, GetSessionResponse
@@ -10,6 +10,7 @@ from app.schemas.attendance import AttendanceLogResponse
 from app.documents.session import Session
 from app.documents.attendance import AttendanceLog
 from typing import List
+from app.utils.ws_broadcast import WSManager
 
 router = APIRouter()
 
@@ -42,6 +43,27 @@ async def get_session_logs(session_id: str) -> List[AttendanceLogResponse]:
     except CollectionWasNotInitialized:
         # Fallback
         return []
+
+
+@router.websocket(
+    "/ws/session/{session_id}",
+)
+async def websocket_session(session_id: str, websocket: WebSocket) -> None:
+    """WebSocket endpoint that allows real-time log push for a session.
+
+    Clients should connect to `/ws/session/{session_id}` to receive new check-in
+    events as JSON messages. We keep the connection open until the client
+    disconnects.
+    """
+    await WSManager.connect(session_id, websocket)
+    try:
+        while True:
+            # Keep the connection alive by awaiting incoming messages.
+            # Clients are not required to send messages; receiving will simply
+            # wait until the connection closes or a message is sent.
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        WSManager.disconnect(session_id, websocket)
 
 
 @router.get(

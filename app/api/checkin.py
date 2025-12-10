@@ -6,6 +6,8 @@ from app.utils.mongodb import MongoDB
 from app.schemas.checkin import CheckInRequest, CheckInResponse
 from app.documents.session import Session
 from app.documents.attendance import AttendanceLog
+from app.utils.ws_broadcast import WSManager
+import asyncio
 from app.utils.totp import validate_sliding_window
 
 router = APIRouter()
@@ -42,14 +44,15 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
     ):
         # still log the attempt
         try:
-            await AttendanceLog(
-            student_id=payload.student_id,
-            session_id=payload.session_id,
-            method=payload.method or "QR",
-            duration_ms=payload.duration_ms or 0,
-            success=False,
-            hci_events=payload.hci_events,
-            ).insert()
+            attendance_doc = AttendanceLog(
+                student_id=payload.student_id,
+                session_id=payload.session_id,
+                method=payload.method or "QR",
+                duration_ms=payload.duration_ms or 0,
+                success=False,
+                hci_events=payload.hci_events,
+            )
+            await attendance_doc.insert()
         except CollectionWasNotInitialized:
             MongoDB.add_fallback_log({
                 "student_id": payload.student_id,
@@ -118,17 +121,19 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
         return CheckInResponse(success=False, reason="Already checked in")
 
     # Persist log
+    attendance_doc = None
     try:
-        await AttendanceLog(
-        student_id=payload.student_id,
-        session_id=payload.session_id,
-        method=payload.method or "QR",
-        duration_ms=payload.duration_ms or 0,
-        success=bool(is_valid),
-        selfie_image=payload.selfie_image,
-        metadata=payload.metadata,
-        hci_events=payload.hci_events,
-        ).insert()
+        attendance_doc = AttendanceLog(
+            student_id=payload.student_id,
+            session_id=payload.session_id,
+            method=payload.method or "QR",
+            duration_ms=payload.duration_ms or 0,
+            success=bool(is_valid),
+            selfie_image=payload.selfie_image,
+            metadata=payload.metadata,
+            hci_events=payload.hci_events,
+        )
+        await attendance_doc.insert()
     except CollectionWasNotInitialized:
         MongoDB.add_fallback_log({
             "student_id": payload.student_id,
@@ -140,6 +145,23 @@ async def validate_check_in(payload: CheckInRequest) -> CheckInResponse:
             "metadata": payload.metadata,
             "hci_events": payload.hci_events,
         })
+
+    # Broadcast to open websockets for the session, if present. We emit the AttendanceLog info
+    # as JSON without the selfie image to avoid sending large payloads over sockets repeatedly.
+    try:
+        if attendance_doc is not None:
+            broadcast_payload = {
+                "student_id": attendance_doc.student_id,
+                "method": attendance_doc.method,
+                "timestamp": attendance_doc.timestamp.isoformat(),
+                "success": attendance_doc.success,
+                "duration_ms": attendance_doc.duration_ms,
+                "metadata": attendance_doc.metadata,
+                "hci_events": attendance_doc.hci_events,
+            }
+            asyncio.create_task(WSManager.broadcast(payload.session_id, broadcast_payload))
+    except Exception:
+        pass
 
     if is_valid:
         # Mark student as checked in
