@@ -1,34 +1,47 @@
-Tendy (Monorepo)
-=================
+Tendy
+=====
 
 Overview
 --------
-This repository combines the Tendy backend (Python / FastAPI), the Flutter frontend, and supporting infra for local development and deployment.
+Tendy is a research prototype for a multi-modal attendance system that compares three verification approaches: dynamic QR codes (active), Bluetooth proximity (passive), and a biometric liveness audit (social). This repository contains the backend server (Python / FastAPI), a Flutter client (mobile + web), infrastructure for local development, and the project paper and analysis.
 
-Top-level layout
------------------
-- `backend/` — Python app (moved from previous `app/`), tests, backend Dockerfile and pyproject
-- `frontend/` — Flutter app (copied from your local `myapp`) 
-- `infra/` — docker-compose and infra helpers (place for nginx, reverse proxy etc.)
-- `paper/` — LaTeX and analysis artifacts
-- `scripts/` — useful developer scripts
+Key features
+------------
+- Backend: FastAPI server handling sessions, TOTP QR generation, BLE-assisted presence, and an audit endpoint for biometric images.
+- Frontend: Flutter app implementing the three check-in flows (QR, BLE, Biometric) and demo UI.
+- Research artifacts: analysis notebook and LaTeX paper in `paper/`.
 
-Quick start (dev)
+Repository layout
 -----------------
-1. Install prerequisites: Docker, Docker Compose, Flutter SDK (for mobile/web dev).
-2. From repo root, run `make setup` (if present) or follow component instructions:
-   - Backend: `cd backend && python -m pip install -r requirements.txt && uvicorn backend.app:app --reload`
-   - Frontend (web): `cd frontend/myapp && flutter pub get && flutter run -d web-server`
-3. To run combined services (if `infra/docker-compose.yml` added): `docker-compose -f infra/docker-compose.yml up --build`
+- `backend/` — Python service, tests, Dockerfile, packaging
+- `frontend/` — Flutter project (app source, tests, web build output)
+- `infra/` — docker-compose and supporting infra
+- `paper/` — LaTeX source and analysis notebooks
+- `scripts/` — helper scripts (dev tasks, builders)
+
+Quick start (development)
+-------------------------
+Prerequisites: Docker, Docker Compose. For Flutter development, install Flutter SDK.
+
+1. Install Python CI deps (optional):
+   make setup
+2. Run both services locally (dev):
+   make dev
+   - The backend will run on http://localhost:8000
+   - The Flutter web dev server will run on http://localhost:5000
+3. Run tests:
+   make backend-test
+   make frontend-test
 
 Notes
 -----
-- The Flutter project was copied into `frontend/myapp`; the embedded Git metadata was removed and the project is now tracked in this repo.
-- Python build files were moved under `backend/`.
+- The repo is organized as a monorepo for easier coordination between backend and frontend.
+- CI workflows run backend Python tests and Flutter tests/build on push and pull requests.
 
-If you want I can:
-- Add a Makefile and dev scripts for standard tasks
-- Create `infra/docker-compose.yml` that runs both services for local dev
-- Add CI workflows for backend and frontend tests
+Contributing
+------------
+Open issues or pull requests for bugs, feature requests, or documentation improvements. If you'd like, I can add more CI checks, deployment scripts, or packaging workflows.
 
-Tell me which of the above you want me to add next and I will implement it.
+Contact
+-------
+Author: Michael Pisman — mpisman@ucmerced.edu
