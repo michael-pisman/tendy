@@ -12,6 +12,7 @@ from devtools import pprint
 from app.config import get_config
 from app.documents.session import Session
 from app.documents.attendance import AttendanceLog
+from app.documents.presence import PresenceLog
 
 # Retrieve application settings which include MongoDB connection details.
 CONFIG = get_config()
@@ -22,6 +23,7 @@ class MongoDB:
     # Fallback in-memory stores used when a real MongoDB isn't reachable.
     _fallback_sessions: dict = {}
     _fallback_attendance_logs: list = []
+    _fallback_presence_logs: list = []
 
     @classmethod
     async def init(cls, mongo_uri: str = CONFIG.mongo_uri, db_name: str = CONFIG.mongo_dbname) -> None:
@@ -47,7 +49,7 @@ class MongoDB:
 
         # Initialize Beanie with the database and the list of document models.
         try:
-            await init_beanie(database=cls.db, document_models=[Session, AttendanceLog])  # type: ignore
+            await init_beanie(database=cls.db, document_models=[Session, AttendanceLog, PresenceLog])  # type: ignore
         except Exception as e:
             # Fail fast and continue -- allow application to start even if DB is unreachable
             print("Warning: Beanie init failed, continuing without DB readiness:")
@@ -100,6 +102,10 @@ class MongoDB:
     @classmethod
     def add_fallback_log(cls, log: dict) -> None:
         cls._fallback_attendance_logs.append(log)
+
+    @classmethod
+    def add_fallback_presence(cls, presence: dict) -> None:
+        cls._fallback_presence_logs.append(presence)
     
     # @classmethod
     # async def drop_database(cls) -> None:

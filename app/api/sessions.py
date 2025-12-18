@@ -7,8 +7,11 @@ from beanie.exceptions import CollectionWasNotInitialized
 from app.utils.mongodb import MongoDB
 from app.schemas.session import CreateSessionRequest, CreateSessionResponse, GetSessionResponse
 from app.schemas.attendance import AttendanceLogResponse
+from app.schemas.presence import PresenceRequest, PresenceResponse
+from app.schemas.presence import PresenceLogResponse
 from app.documents.session import Session
 from app.documents.attendance import AttendanceLog
+from app.documents.presence import PresenceLog
 from typing import List
 from app.utils.ws_broadcast import WSManager
 
@@ -42,6 +45,91 @@ async def get_session_logs(session_id: str) -> List[AttendanceLogResponse]:
         ]
     except CollectionWasNotInitialized:
         # Fallback
+        return []
+
+
+@router.post(
+    "/session/{session_id}/presence",
+    response_model=PresenceResponse,
+    tags=["Sessions"],
+    summary="Report a presence RSSI for a session",
+)
+async def report_presence(session_id: str, payload: PresenceRequest) -> PresenceResponse:
+    # Validate session exists or fallback
+    session = MongoDB.get_fallback_session(session_id)
+    if session is None:
+        try:
+            session = await Session.get(session_id)
+        except CollectionWasNotInitialized:
+            # DB not ready but allow fallback
+            session = None
+        except Exception:
+            # invalid id
+            raise HTTPException(status_code=404, detail="Session not found")
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    presence_doc = None
+    from datetime import datetime, timezone
+    ts = payload.timestamp if payload.timestamp is not None else datetime.now(timezone.utc)
+    try:
+        presence_doc = PresenceLog(
+            session_id=session_id,
+            student_id=payload.student_id,
+            rssi=payload.rssi,
+            device_model=payload.device_model,
+            device_os=payload.device_os,
+            timestamp=ts,
+        )
+        await presence_doc.insert()
+    except CollectionWasNotInitialized:
+        MongoDB.add_fallback_presence({
+            "session_id": session_id,
+            "student_id": payload.student_id,
+            "rssi": payload.rssi,
+            "device_model": payload.device_model,
+            "device_os": payload.device_os,
+            "timestamp": ts.isoformat(),
+        })
+
+    # Broadcast presence update via WebSocket
+    try:
+        broadcast_payload = {
+            "type": "presence_update",
+            "student_id": payload.student_id,
+            "rssi": payload.rssi,
+            "device_model": payload.device_model,
+            "device_os": payload.device_os,
+            "timestamp": ts.isoformat(),
+        }
+        asyncio.create_task(WSManager.broadcast(session_id, broadcast_payload))
+    except Exception:
+        pass
+
+    return PresenceResponse(success=True)
+
+
+@router.get(
+    "/session/{session_id}/presence",
+    response_model=List[PresenceLogResponse],
+    tags=["Sessions"],
+    summary="Get recent presence logs for a session",
+)
+async def get_presence_logs(session_id: str) -> List[PresenceLogResponse]:
+    try:
+        logs = await PresenceLog.find(PresenceLog.session_id == session_id).sort(-PresenceLog.timestamp).to_list()
+        return [
+            PresenceLogResponse(
+                student_id=log.student_id,
+                rssi=log.rssi,
+                device_model=log.device_model,
+                device_os=log.device_os,
+                timestamp=log.timestamp,
+            )
+            for log in logs
+        ]
+    except CollectionWasNotInitialized:
+        # Fallback - no DB
         return []
 
 
