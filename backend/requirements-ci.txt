@@ -1,0 +1,10 @@
+# Minimal requirements for running tests in CI
+fastapi[standard]
+uvicorn
+beanie
+motor
+pydantic
+pytest
+pytest-asyncio
+pytest-cov
+httpx
