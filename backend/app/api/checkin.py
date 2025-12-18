@@ -1,3 +1,10 @@
+"""Check-in API
+
+This module exposes the `/check-in` endpoint that validates check-ins using
+several methods (QR sliding window, BLE RSSI threshold, selfie-based liveness).
+It logs attempts to the database and broadcasts results to the WebSocket manager.
+"""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
