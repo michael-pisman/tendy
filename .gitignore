@@ -207,3 +207,42 @@ __marimo__/
 .vscode/settings.json
 **.lcov
 app/api/__init__.py
+
+# Flutter / Dart
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Android
+/android/.gradle
+/android/local.properties
+/android/key.properties
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# iOS
+/ios/Flutter/App.framework
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Generated.xcconfig
+/ios/Flutter/app.flx
+/ios/Flutter/app.zip
+/ios/ServiceDefinitions.json
+/ios/Runner/GeneratedPluginRegistrant.*
+/ios/Pods/
+/ios/.symlinks/
+
+# macOS
+/macos/Flutter/ephemeral/
+/macos/Pods/
+/macos/.symlinks/
+
+# Misc
+*.iml
+.idea/
+.DS_Store
