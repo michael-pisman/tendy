@@ -4,7 +4,7 @@
 
 Tendy is a research prototype that explores and compares three attendance verification approaches: dynamic QR codes (active), Bluetooth proximity (passive), and a biometric liveness audit (social). This repository contains the **backend** (Python / FastAPI), the **frontend** (Flutter mobile + web), development **infrastructure**, and the project **paper** and analysis artifacts.
 
-[tendy.pdf](https://github.com/user-attachments/files/28654808/tendy.pdf)
+[Read the paper](https://github.com/user-attachments/files/28654808/tendy.pdf)
 
 
 ---
